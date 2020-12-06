@@ -1,3 +1,20 @@
+/*
+ * Copyright 2020 Xemplar Softworks LLC (https://xemplarsoft.com)
+ * Copyright 2020 Noku App
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.noku.base;
 
 import java.util.Properties;
@@ -7,7 +24,18 @@ public interface MySQLConnection<T extends ResultProvider> {
      * Set credentials and database to use with this connection and connect to it.
      * @param provider parameter to obtain credentials from.
      */
-    public void connect(CredentialProvider provider);
+    public boolean connect(CredentialProvider provider);
+
+    /**
+     * Send a query to the connected MySQL database.
+     * @param q the query
+     * @return your custom {@link ResultProvider} implementation.
+     */
     public T query(Query q);
+
+    /**
+     * Gets the last error from the connection.
+     * @return error message.
+     */
     public String getError();
 }

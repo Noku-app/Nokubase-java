@@ -1,3 +1,20 @@
+/*
+ * Copyright 2020 Xemplar Softworks LLC (https://xemplarsoft.com)
+ * Copyright 2020 Noku App
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.noku.base;
 
 import java.util.ArrayList;
@@ -7,6 +24,12 @@ import java.util.Collections;
 public class ConditionSet extends Condition {
     protected Condition[] conditions;
     protected Operator[] operators;
+
+    /**
+     * Creates a set of conditions to be met with provided condition array.
+     * @param conditions to be merged into one condition.
+     * @param operator how to link each condition together.
+     */
     public ConditionSet(Condition[] conditions, Operator operator){
         if(operator == null) operator = Operator.AND;
         this.operators = new Operator[conditions.length - 1];
@@ -14,18 +37,6 @@ public class ConditionSet extends Condition {
 
         System.arraycopy(conditions, 0, this.conditions, 0, conditions.length);
         Arrays.fill(operators, operator);
-    }
-
-    public String toString() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("(");
-        for(int i = 0; i < conditions.length; i++){
-            builder.append(conditions[i].toString());
-            if(i < (conditions.length - 1)) builder.append(" ").append(operators[i].op).append(" ");
-        }
-        builder.append(")");
-
-        return builder.toString();
     }
 
     public String buildPrepared() {
