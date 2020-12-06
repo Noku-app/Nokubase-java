@@ -11,6 +11,9 @@
 # DB Config #
 db.properties
 
+# Test Class #
+/src/main/java/com/noku/base/javase/Main.java
+
 ### Gradle ###
 .gradle
 /build/
