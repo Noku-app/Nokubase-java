@@ -22,6 +22,7 @@ import com.noku.base.ColumnValuePair;
 import com.noku.base.Condition;
 import com.noku.base.DataBaseLink;
 import com.noku.base.MySQLConnection;
+import com.noku.base.javase.containers.RegisterModal;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,6 +36,73 @@ public class NokuBase extends DataBaseLink<NokuResult> {
     public NokuBase(Properties properties){
         MySQLConnection<NokuResult> connection = new NokuConnection();
         init(connection, new PropertyCredentialProvider(properties));
+    }
+
+    /**
+     * Creates all tables that should exist for the NokuApp
+     */
+    public void initTables(){
+        String[] tables = new String[]{
+            "CREATE TABLE IF NOT EXISTS tokens \n" +
+            "    (\n" +
+            "        uid INT UNSIGNED NOT NULL, \n" +
+            "        secret VARCHAR(60) NOT NULL, \n" +
+            "        token VARCHAR(150) NOT NULL\n" +
+            "    );",
+            "CREATE TABLE IF NOT EXISTS account \n" +
+            "    (\n" +
+            "        uid INT UNSIGNED NOT NULL, \n" +
+            "        email VARCHAR(50) NOT NULL, \n" +
+            "        creation_time BIGINT UNSIGNED NOT NULL,\n" +
+            "        points INT UNSIGNED NOT NULL,\n" +
+            "        pfp VARCHAR(60),\n" +
+            "        age INT UNSIGNED,\n" +
+            "        nsfw BOOLEAN NOT NULL,\n" +
+            "        moderator BOOLEAN NOT NULL,\n" +
+            "        admin BOOLEAN NOT NULL,\n" +
+            "        developer BOOLEAN NOT NULL,\n" +
+            "        gender VARCHAR(8),\n" +
+            "        nick VARCHAR(20) NOT NULL,\n" +
+            "        bio VARCHAR(500),\n" +
+            "        background_color VARCHAR(10),\n" +
+            "        border_color VARCHAR(10)\n" +
+            "    );"
+        };
+        
+        for(int i = 0; i < tables.length; i++){
+            boolean set = query(tables[i]).isSuccessful();
+            System.out.println("Table '" + tables[i].substring(tables[i].indexOf("EXISTS") + 7, tables[i].indexOf("\n") - 1) + "' created: " + set);
+        }
+    }
+    
+    public boolean registerUser(RegisterModal modal){
+        if(modal == null) return false;
+        return insert("account", modal.asColumns());
+    }
+    
+    public boolean tokenUser(int uid, String secret, String token){
+        return insert("tokens",
+            ColumnValuePair.from("uid", uid + ""),
+            ColumnValuePair.from("secret", secret),
+            ColumnValuePair.from("token", token)
+        );
+    }
+    
+    public boolean updateSecret(int uid, String secret){
+        return update("tokens", new Condition("uid", uid), ColumnValuePair.from("secret", secret));
+    }
+    
+    public boolean updateToken(int uid, String token){
+        return update("tokens", new Condition("uid", uid), ColumnValuePair.from("token", token));
+    }
+    
+    public boolean emailTaken(String email){
+        NokuResult result = select("account", new Condition("email", email), "id");
+        if(result.isEmpty()) return true;
+        else {
+            System.out.println("Email Taken by uid: " + result.getRow(0).getValueFrom("id"));
+            return false;
+        }
     }
 
     public NokuResult select(String table, Condition condition, String... fields) {

@@ -24,13 +24,21 @@ public interface MySQLConnection<T extends ResultProvider> {
      * @param provider parameter to obtain credentials from.
      */
     public boolean connect(CredentialProvider provider);
-
+    
+    /**
+     * Send a query to the connected MySQL database.
+     * @param s the query string.
+     * @param params parameters to insert into the query
+     * @return your custom {@link ResultProvider} implementation.
+     */
+    public T query(String s, String... params);
+    
     /**
      * Send a query to the connected MySQL database.
      * @param s the query string.
      * @return your custom {@link ResultProvider} implementation.
      */
-    public T query(String s, String... params);
+    public T query(String s);
 
     /**
      * Gets the last error from the connection.

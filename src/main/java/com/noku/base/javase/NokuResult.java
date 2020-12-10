@@ -30,14 +30,15 @@ import java.util.ArrayList;
 
 public final class NokuResult implements ResultProvider {
     private ArrayList<ResultRow> rows = new ArrayList<>();
-    private boolean successful, bool, row;
+    private boolean successful, bool, row, isEmpty;
     private int rowCount, code;
     private String message;
-
+    private ResultSet resultSet;
+    
     public NokuResult(ResultSet set){
         try {
             ResultSetMetaData md = set.getMetaData();
-            boolean isEmpty = true;
+            isEmpty = true;
             while(set.next()) {
                 isEmpty = false;
                 System.out.println("Processing Result Row: " + rows.size());
@@ -52,14 +53,19 @@ public final class NokuResult implements ResultProvider {
                 }
                 rows.add(ret);
             }
-            this.successful = !isEmpty;
             if(isEmpty){
                 if(set.getWarnings() != null) this.message = set.getWarnings().getMessage();
             }
             set.close();
+            this.successful = true;
         } catch (SQLException e){
             e.printStackTrace();
         }
+    }
+    
+    public NokuResult(ResultSet set, boolean retainSet){
+        this(set);
+        this.resultSet = retainSet ? set : null;
     }
 
     public NokuResult(boolean successful){
@@ -78,6 +84,10 @@ public final class NokuResult implements ResultProvider {
         this.successful = rowCount > 0;
         this.rowCount = rowCount;
     }
+    
+    public ResultSet getResultSet(){
+        return resultSet;
+    }
 
     public boolean isBool(){
         return bool;
@@ -85,6 +95,10 @@ public final class NokuResult implements ResultProvider {
 
     public boolean isSuccessful() {
         return successful;
+    }
+    
+    public boolean isEmpty() {
+        return isEmpty;
     }
 
     public int getRowCount(){

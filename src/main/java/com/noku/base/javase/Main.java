@@ -35,6 +35,8 @@ public class Main {
         System.out.println("Connected: " + connected);
 
         if(connected) {
+            base.initTables();
+            
             boolean result = base.delete("testdb_codes", new Condition("id", 13));
             //boolean result = base.update("testdb_user", new Condition("id", "1"), new ColumnValuePair("data", "[]"));
             //NokuResult result = base.select("testdb_user", new Condition("1", "1"), "email", "achievements");

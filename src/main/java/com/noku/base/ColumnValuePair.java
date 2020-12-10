@@ -39,4 +39,8 @@ public class ColumnValuePair {
     public String toString() {
         return column + "='" + value + "'";
     }
+    
+    public static final ColumnValuePair from(String column, String value){
+        return new ColumnValuePair(column, value);
+    }
 }

@@ -44,11 +44,15 @@ public final class NokuConnection implements MySQLConnection<NokuResult> {
     }
 
     public NokuResult query(String s){
+        String checker = s.toUpperCase().trim();
         try{
             Statement stat = this.connection.createStatement();
-            ResultSet ret = stat.executeQuery(s);
             stat.closeOnCompletion();
-            return new NokuResult(ret);
+            if(checker.startsWith("SELECT")) new NokuResult(stat.executeQuery(s), true);
+            else if(checker.startsWith("UPDATE")) return new NokuResult(stat.executeUpdate(s));
+            else if(checker.startsWith("INSERT")) return new NokuResult(stat.executeUpdate(s));
+            else if(checker.startsWith("DELETE")) return new NokuResult(stat.executeUpdate(s));
+            else return new NokuResult(stat.execute(s));
         } catch (SQLException e){
             e.printStackTrace();
         }
