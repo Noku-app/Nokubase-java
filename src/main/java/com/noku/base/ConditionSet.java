@@ -20,7 +20,6 @@ package com.noku.base;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 
 public class ConditionSet extends Condition {
     protected Condition[] conditions;
@@ -77,6 +76,14 @@ public class ConditionSet extends Condition {
             ret += conditions[i].getParameterCount();
         }
         return ret;
+    }
+
+    public String getParameterTypes() {
+        StringBuilder builder = new StringBuilder();
+        for(int i = 0; i < conditions.length; i++){
+            builder.append(conditions[i].getParameterTypes());
+        }
+        return builder.toString();
     }
 
     public enum Operator{

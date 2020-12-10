@@ -18,35 +18,117 @@
 
 package com.noku.base.javase;
 
-import com.noku.base.*;
+import com.noku.base.ColumnValuePair;
+import com.noku.base.Condition;
+import com.noku.base.DataBaseLink;
+import com.noku.base.MySQLConnection;
+
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Properties;
 
 public class NokuBase extends DataBaseLink<NokuResult> {
+    /**
+     * Create a new instance of {@link NokuBase}
+     * @param properties {@link Properties} object to load connection settings from.
+     */
     public NokuBase(Properties properties){
         MySQLConnection<NokuResult> connection = new NokuConnection();
         init(connection, new PropertyCredentialProvider(properties));
     }
 
-    public NokuResult select(String[] fields, String table, Condition condition) {
-        return connection.query(Query.select(fields, table, condition));
+    public NokuResult select(String table, Condition condition, String... fields) {
+        String query = "SELECT {fields} FROM " + table;
+        if(fields == null) return null;
+        if(table == null) return null;
+        if(condition != null) query += " WHERE {condition}";
+        StringBuilder insert = new StringBuilder();
+        for(int i = 0; i < fields.length; i++){
+            insert.append(fields[i]);
+            if(i < (fields.length - 1)) insert.append(", ");
+        }
+        query = query.replace("{fields}", insert.toString());
+        if(condition != null) {
+            query = query.replace("{condition}", condition.buildPrepared());
+            return connection.query(query, condition.preparedValues());
+        } else return connection.query(query);
     }
 
-    public boolean update(ColumnValuePair[] fields, String table, Condition condition) {
-        NokuResult res = connection.query(Query.update(fields, table, condition));
-        return res.isSuccessful();
+    public boolean update(String table, Condition condition, ColumnValuePair... fields) {
+        String query = "UPDATE " + table + " SET {values}";
+        if(fields == null) return false;
+        if(table == null) return false;
+        if(condition != null) query += " WHERE {condition}";
+        ArrayList<String> params = new ArrayList<>();
+        StringBuilder insert = new StringBuilder();
+        for(int i = 0; i < fields.length; i++){
+            insert.append(fields[i].column).append(" = '").append(fields[i].value).append("'");
+            if(i < (fields.length - 1)) insert.append(", ");
+        }
+        query = query.replace("{values}", insert.toString());
+        NokuResult set;
+        if(condition != null) {
+            query = query.replace("{condition}", condition.buildPrepared());
+            Collections.addAll(params, condition.preparedValues());
+        }
+        set = connection.query(query, params.toArray(new String[0]));
+        System.out.println("Execute Query: " + query);
+
+        if(set.getCode() != 0) pushMessage(set.asResultMessage());
+
+        return set.isSuccessful();
     }
 
-    public boolean insert(ColumnValuePair[] fields, String table) {
-        NokuResult res = connection.query(Query.insert(fields, table));
-        return res.isSuccessful();
+    public boolean insert(String table, ColumnValuePair... fields) {
+        String query = "INSERT INTO " + table + " ({columns}) VALUES ({values})";
+        if(fields == null) return false;
+        if(table == null) return false;
+        ArrayList<String> values = new ArrayList<>();
+        StringBuilder columns = new StringBuilder();
+        StringBuilder params = new StringBuilder();
+        for(int i = 0; i < fields.length; i++){
+            columns.append(fields[i].column);
+            if(i < (fields.length - 1)) columns.append(", ");
+
+            params.append("?");
+            if(i < (fields.length - 1)) params.append(", ");
+
+            values.add(fields[i].value);
+        }
+        query = query.replace("{columns}", columns.toString());
+        query = query.replace("{values}", params.toString());
+        NokuResult set;
+        set = connection.query(query, values.toArray(new String[0]));
+        System.out.println("Execute Query: " + query);
+
+        if(set.getCode() != 0) pushMessage(set.asResultMessage());
+
+        return set.isSuccessful();
     }
 
+    @Override
     public boolean delete(String table, Condition condition) {
-        NokuResult res = connection.query(Query.delete(table, condition));
-        return res.isSuccessful();
+        String query = "DELETE FROM " + table + " WHERE {condition}";
+        if(table == null) return false;
+        if(condition == null) return false;
+
+        NokuResult set;
+        query = query.replace("{condition}", condition.buildPrepared());
+        set = connection.query(query, condition.preparedValues());
+        System.out.println("Execute Query: " + query);
+
+        if(set.getCode() != 0) pushMessage(set.asResultMessage());
+
+        return set.isSuccessful();
     }
 
-    public NokuResult custom(Query customQuery) {
-        return connection.query(customQuery);
+    public NokuResult query(String s){
+        System.out.println("Execute Query: " + s);
+        return connection.query(s);
+    }
+
+    public NokuResult query(String s, String... params){
+        System.out.println("Execute Query: " + s);
+        return connection.query(s, params);
     }
 }

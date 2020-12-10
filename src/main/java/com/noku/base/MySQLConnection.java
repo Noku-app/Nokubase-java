@@ -18,8 +18,6 @@
 
 package com.noku.base;
 
-import java.util.Properties;
-
 public interface MySQLConnection<T extends ResultProvider> {
     /**
      * Set credentials and database to use with this connection and connect to it.
@@ -29,10 +27,10 @@ public interface MySQLConnection<T extends ResultProvider> {
 
     /**
      * Send a query to the connected MySQL database.
-     * @param q the query
+     * @param s the query string.
      * @return your custom {@link ResultProvider} implementation.
      */
-    public T query(Query q);
+    public T query(String s, String... params);
 
     /**
      * Gets the last error from the connection.

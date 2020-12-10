@@ -19,8 +19,13 @@
 package com.noku.base;
 
 public class Condition {
+    public static final int DT_STRING = 0x01;
+    public static final int DT_INTEGER = 0x02;
+    public static final int DT_BOOLEAN = 0x03;
     protected ConditionType type;
-    protected String name, var;
+    protected String name;
+    protected Object var;
+    protected int dt;
 
     /**
      * Creates a condition for use in queries.
@@ -32,6 +37,21 @@ public class Condition {
         this.name = name;
         this.var = var;
         this.type = type;
+        this.dt = DT_STRING;
+    }
+
+    public Condition(String name, int var, ConditionType type){
+        this.name = name;
+        this.var = var;
+        this.type = type;
+        this.dt = DT_INTEGER;
+    }
+
+    public Condition(String name, boolean var, ConditionType type){
+        this.name = name;
+        this.var = var;
+        this.type = type;
+        this.dt = DT_BOOLEAN;
     }
 
     /**
@@ -40,6 +60,12 @@ public class Condition {
      * @param var value to check for.
      */
     public Condition(String name, String var){
+        this(name, var, ConditionType.EQUALS);
+    }
+    public Condition(String name, int var){
+        this(name, var, ConditionType.EQUALS);
+    }
+    public Condition(String name, boolean var){
         this(name, var, ConditionType.EQUALS);
     }
 
@@ -53,7 +79,7 @@ public class Condition {
      * @return SQL snippet.
      */
     public String buildPrepared(){
-        return "?" + type.operator + "'?'";
+        return name + type.operator + "?";
     }
 
     /**
@@ -61,7 +87,7 @@ public class Condition {
      * @return SQL snippet.
      */
     public String buildFilled(){
-        return name + type.operator + "'" + var + "'";
+        return name + type.operator + var;
     }
 
     /**
@@ -69,7 +95,7 @@ public class Condition {
      * @return SQL snippet.
      */
     public String[] preparedValues(){
-        return new String[]{name, var};
+        return new String[]{String.valueOf(var)};
     }
 
     /**
@@ -77,6 +103,19 @@ public class Condition {
      * @return number of parameters.
      */
     public int getParameterCount(){
-        return 2;
+        return 1;
+    }
+
+    /**
+     * Gets the parameter types
+     * @return parameter types.
+     */
+    public String getParameterTypes(){
+        switch (dt){
+            default:
+            case DT_STRING: return "ss";
+            case DT_INTEGER: return "si";
+            case DT_BOOLEAN: return "sb";
+        }
     }
 }

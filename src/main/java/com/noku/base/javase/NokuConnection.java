@@ -20,7 +20,6 @@ package com.noku.base.javase;
 
 import com.noku.base.CredentialProvider;
 import com.noku.base.MySQLConnection;
-import com.noku.base.Query;
 
 import java.sql.*;
 
@@ -34,9 +33,9 @@ public final class NokuConnection implements MySQLConnection<NokuResult> {
             DriverManager.registerDriver(new com.mysql.jdbc.Driver());
             this.database = provider.getDatabase();
             if(!provider.getHost().endsWith("/")) this.database = "/" + this.database;
-
+            this.database += "?autoReconnect=true&useSSL=false&useUnicode=true&characterEncoding=UTF-8";
             connection = DriverManager.getConnection(provider.getHost() + database, provider.getUsername(), provider.getPassword());
-            connection.setAutoCommit(false);
+            System.out.println(provider.getHost() + database);
             return true;
         } catch (Exception e){
             e.printStackTrace();
@@ -44,51 +43,34 @@ public final class NokuConnection implements MySQLConnection<NokuResult> {
         return false;
     }
 
-
-    public NokuResult query(Query q) {
-        int parameter = 0;
-        ResultSet res = null;
-        try {
-            PreparedStatement stat = connection.prepareStatement(q.buildPrepared());
-            String[] parameters = q.getParameters();
-            char[] parameterTypes = q.getParameterTypes().toCharArray();
-
-            for(int i = 0; i < parameters.length; i++){
-                parameter = i;
-                switch (parameterTypes[i]){
-                    default:
-                    case 's': stat.setString(i, parameters[i]); break;
-                    case 'i': stat.setInt(i, Integer.parseInt(parameters[i])); break;
-                    case 'b': stat.setBoolean(i, Boolean.parseBoolean(parameters[i])); break;
-                }
-            }
-            res = stat.executeQuery();
-            connection.commit();
-
-            if(q.getType() == Query.Type.SELECT || q.getType() == Query.Type.CUSTOM) {
-                return new NokuResult(q.getColumns(), q.getColumnTypes(), res);
-            } else {
-                boolean result = false;
-                if(res == null) return new NokuResult(false);
-                else {
-                    if(q.getType() != Query.Type.UPDATE) result = res.rowUpdated();
-                    if(q.getType() != Query.Type.DELETE) result = res.rowUpdated();
-                    if(q.getType() != Query.Type.INSERT) result = res.rowInserted();
-                }
-                return new NokuResult(result);
-            }
-
-        } catch (SQLTimeoutException e){
-            this.error = "SQL Server timed out.";
+    public NokuResult query(String s){
+        try{
+            Statement stat = this.connection.createStatement();
+            ResultSet ret = stat.executeQuery(s);
+            stat.closeOnCompletion();
+            return new NokuResult(ret);
         } catch (SQLException e){
-            this.error = e.getSQLState();
-        } catch (NumberFormatException e){
-            this.error = "Invalid input for parameter: " + parameter;
+            e.printStackTrace();
         }
-
-        return new NokuResult(false);
+        return null;
     }
 
+    public NokuResult query(String s, String... params){
+        try{
+            PreparedStatement stat = this.connection.prepareStatement(s);
+            for(int i = 0; i < params.length; i++){
+                stat.setString(i + 1, params[i]);
+            }
+            if(s.startsWith("SELECT")) return new NokuResult(stat.executeQuery());
+            else if(s.startsWith("UPDATE")) return new NokuResult(stat.executeUpdate());
+            else if(s.startsWith("INSERT")) return new NokuResult(stat.executeUpdate());
+            else if(s.startsWith("DELETE")) return new NokuResult(stat.executeUpdate());
+            return new NokuResult(false, -1 << 10, "Method not valid.");
+        } catch (SQLException e){
+            e.printStackTrace();
+            return new NokuResult(false, e.getErrorCode(), e.getMessage());
+        }
+    }
 
     public String getError() {
         return error;

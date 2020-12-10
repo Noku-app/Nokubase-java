@@ -18,13 +18,7 @@
 
 package com.noku.base;
 
-import com.noku.base.javase.NokuBase;
-import com.noku.base.javase.NokuResult;
 import junit.framework.TestCase;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.util.Properties;
 
 public class ConnectionTest extends TestCase {
     public void testConnection() throws Exception {

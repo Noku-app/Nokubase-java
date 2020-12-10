@@ -19,30 +19,44 @@
 package com.noku.base.javase;
 
 import com.noku.base.ColumnValuePair;
+import com.noku.base.ResultMessage;
 import com.noku.base.ResultProvider;
 import com.noku.base.ResultRow;
 
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
 public final class NokuResult implements ResultProvider {
     private ArrayList<ResultRow> rows = new ArrayList<>();
-    private boolean successful, bool;
-    public NokuResult(String[] cols, String types_defs, ResultSet set){
-        char[] types = types_defs.toCharArray();
+    private boolean successful, bool, row;
+    private int rowCount, code;
+    private String message;
+
+    public NokuResult(ResultSet set){
         try {
-            while (set.next()) {
+            ResultSetMetaData md = set.getMetaData();
+            boolean isEmpty = true;
+            while(set.next()) {
+                isEmpty = false;
+                System.out.println("Processing Result Row: " + rows.size());
                 ResultRow ret = new ResultRow();
-                for(int i = 0; i < cols.length; i++){
-                    switch (types[i]){
-                        case 'i': ret.addColumn(new ColumnValuePair(cols[i], set.getInt(cols[i]) + "")); continue;
-                        case 's': ret.addColumn(new ColumnValuePair(cols[i], set.getString(cols[i]))); continue;
-                        case 'b': ret.addColumn(new ColumnValuePair(cols[i], Boolean.toString(set.getBoolean(cols[i])))); continue;
-                    }
+                int colCount = md.getColumnCount();
+                for(int i = 1; i <= colCount; i++){
+                    System.out.println("  Col Name: " + md.getColumnName(i));
+                    System.out.println("  Col Type: " + md.getColumnTypeName(i));
+                    System.out.println("  Col Value: " + set.getString(i));
+                    System.out.println("  Col Table: " + md.getTableName(i));
+                    ret.addColumn(new ColumnValuePair(md.getColumnName(i), set.getString(i)));
                 }
                 rows.add(ret);
             }
+            this.successful = !isEmpty;
+            if(isEmpty){
+                if(set.getWarnings() != null) this.message = set.getWarnings().getMessage();
+            }
+            set.close();
         } catch (SQLException e){
             e.printStackTrace();
         }
@@ -51,6 +65,18 @@ public final class NokuResult implements ResultProvider {
     public NokuResult(boolean successful){
         this.bool = true;
         this.successful = successful;
+    }
+
+    public NokuResult(boolean successful, int code, String message){
+        this.successful = successful;
+        this.message = message;
+        this.code = code;
+    }
+
+    public NokuResult(int rowCount){
+        this.row = true;
+        this.successful = rowCount > 0;
+        this.rowCount = rowCount;
     }
 
     public boolean isBool(){
@@ -73,5 +99,16 @@ public final class NokuResult implements ResultProvider {
 
     public ResultRow getRow(int index){
         return rows.get(index);
+    }
+
+    public String getMessage(){
+        return message;
+    }
+    public int getCode(){
+        return code;
+    }
+
+    public ResultMessage asResultMessage(){
+        return new ResultMessage(code, message);
     }
 }

@@ -19,7 +19,6 @@
 package com.noku.base.javase;
 
 import com.noku.base.Condition;
-import com.noku.base.ResultRow;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -36,10 +35,20 @@ public class Main {
         System.out.println("Connected: " + connected);
 
         if(connected) {
-            NokuResult result = base.select(new String[]{"user_id", "player_id"}, "testdb_player", new Condition("id", "1"));
-            ResultRow curr = result.getRow(0);
-            System.out.println("User ID: " + curr.getValueFrom("user_id"));
-            System.out.println("Player ID: " + curr.getValueFrom("player_id"));
+            boolean result = base.delete("testdb_codes", new Condition("id", 13));
+            //boolean result = base.update("testdb_user", new Condition("id", "1"), new ColumnValuePair("data", "[]"));
+            //NokuResult result = base.select("testdb_user", new Condition("1", "1"), "email", "achievements");
+            //NokuResult result = base.query("SELECT * FROM testdb_user WHERE ?=?;", "1", "1");
+
+            //if(result.isSuccessful()) {
+            //    ResultRow curr = result.getRow(0);
+            //    System.out.println("Email: " + curr.getValueFrom("email"));
+            //    System.out.println("Achievements: " + curr.getValueFrom("achievements"));
+            //} else {
+            //    System.out.println("Error: " + base.getError());
+            //    System.out.println("Error: " + result.getError());
+            //}
+            System.out.println("Result: " + result);
         }
     }
 }
