@@ -24,15 +24,15 @@ public class ConditionTest extends TestCase {
     static Condition condition = new Condition("id", "23");
     public void testBuildPrepared() {
         String pre = condition.buildPrepared();
-        String expected = "?='?'";
+        String expected = "id=?";
         System.out.println("Build prepared expects: " + expected);
         System.out.println("Build prepared obtained: " + pre);
-        assertEquals(pre, expected);
+        assertEquals(expected, pre);
     }
 
     public void testPreparedValues() {
         String[] pre = condition.preparedValues();
-        String[] expected = new String[]{"id", "23"};
+        String[] expected = new String[]{"23"};
 
         for(int i = 0; i < pre.length; i++){
             System.out.println("Build value expects parameter" + i + " to be: " + expected[i]);

@@ -28,7 +28,7 @@ public class ConditionSetTest extends TestCase {
 
     public void testBuildPrepared() {
         String pre = condition.buildPrepared();
-        String expected = "((?='?') AND (?>'?'))";
+        String expected = "((uid=?) AND (pid>?))";
         System.out.println("Build prepared expects: " + expected);
         System.out.println("Build prepared obtained: " + pre);
         assertEquals(pre, expected);
@@ -36,7 +36,7 @@ public class ConditionSetTest extends TestCase {
 
     public void testPreparedValues() {
         String[] pre = condition.preparedValues();
-        String[] expected = new String[]{"uid", "73", "pid", "23"};
+        String[] expected = new String[]{"73", "23"};
 
         for(int i = 0; i < pre.length; i++){
             System.out.println("Build value expects parameter" + i + " to be: " + expected[i]);
