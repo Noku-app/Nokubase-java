@@ -1,4 +1,2 @@
-# Nokubase-java
-![Maven Package](https://github.com/Noku-app/Nokubase-java/workflows/Maven%20Package/badge.svg)
-
-Nokubase Java Implementation.
+# Nokubase-java ![Maven Package](https://github.com/Noku-app/Nokubase-java/workflows/Maven%20Package/badge.svg)
+Nokubase-java is a library that allows different noku modules to interact with the databases it uses. If you want to use Nokubase-java in your own project, clone this repository to your machine. Then run `mvn clean install` to install it to your local maven repository. After that, add `implementation group: 'com.noku.base', name: 'Nokubase-java', version: '0.0.1-PREALPHA'` to your `build.gradle` file and resync your gradle project.
